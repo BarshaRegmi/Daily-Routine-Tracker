@@ -1,0 +1,153 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Daily Routine Tracker{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS (optional) -->
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+
+    <style>
+        body {
+            background: linear-gradient(#8AE3D3, #FFF6D9, #F0B87F);
+            background-attachment: fixed;
+            height: 100vh; /* Make the body take full viewport height */
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            flex-grow: 1;
+            margin-left: 5%;
+            margin-right: 0;
+            
+        }
+
+        .navbar-custom {
+            background-color: #5AB0C4;
+        }
+
+        .navbar-custom .navbar-brand,
+        .navbar-custom .navbar-text {
+            color: whitesmoke;
+        }
+
+        .navbar-nav .nav-item {
+            font-size: 18px;
+        }
+
+        .navbar-nav .nav-item .nav-link {
+            color: #FFFFFF;
+        }
+
+        .navbar-nav .nav-item .nav-link:hover {
+            color: #FFD700;
+        }
+
+        /* Sidebar styling */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: auto;
+            width: 10%;
+            background-color: #5AB0C4;
+            margin-top: 10%;
+            border-radius: 0 10px 10px 0;
+            color: white;
+            overflow-y: auto;
+        }
+
+        .sidebar a {
+            display: block;
+            padding: 10%;
+            color: white;
+            text-decoration: none;
+            font-size: 18px;
+        }
+
+        .sidebar a:hover {
+            background-color: #4A97AA;
+            color: #FFD700;
+        }
+
+        /* Main content styling with sidebar */
+        .content {
+            margin-left: 0%;
+            padding: 0%;
+        }
+
+    /* Footer styling */
+    footer {
+        background-color: #343a40;
+        color: white;
+        padding: 1rem 0;
+        text-align: center;
+        margin-top: auto; 
+        margin-bottom: 0;
+        position: absolute; /* Position footer at the bottom */
+        bottom: 0; /* Stick it to the bottom of the page */
+        width: 100%; /* Ensure footer spans the entire width *//* Ensure footer is pushed to bottom */
+    }
+
+
+    </style>
+
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container">
+            <a class="navbar-brand" href="/">Routine Tracker</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Profile</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <a href="{% url 'home' %}">Home</a>
+        <a href="{% url 'plans' %}">Plan</a>
+        <a href="{% url 'completed' %}">Completed</a>
+        <a href="{% url 'analytics' %}">Analytics</a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+        <div class="container mt-6">
+            {% block content %}
+            <!-- Content will be injected here -->
+            {% endblock %}
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white text-center py-3 mt-4">
+        <p>&copy; {{ current_year }} Daily Routine Tracker. All Rights Reserved.</p>
+    </footer>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>
