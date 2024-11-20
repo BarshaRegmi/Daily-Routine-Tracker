@@ -1,0 +1,186 @@
+{% extends 'base2.html'%} 
+
+{% block content %}
+{% load static %}
+
+<style>
+    label{margin-left: 20px;}
+    #datepicker{width:180px;}
+    #datepicker > span:hover{cursor: pointer;}
+
+    .card {
+        border-radius: 10px;
+    }
+    
+    .card-header {
+        background-color: #5AB0C4;
+        color: white;
+        text-align: center;
+    }
+    
+    .card-body {
+        background-color: #F0F8FF;
+    }
+    
+    .table th, .table td {
+        vertical-align: middle;
+    }
+    
+    .add-row, .delete-row {
+        margin-top: 5px;
+        font-size: 20px;
+    }
+    
+</style>
+
+
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-12">
+            <h1>Lets Plan,{{user.name}}</h1>
+
+           <h5>{{success}}{{error}}</h5>
+
+            <div class="container mt-5" >
+                <div class="form-group" style="width: fit-content;">
+                    <label for="date" class="h5" style="font-size:larger;">Select Date</label>
+                    <input type="date" id="date" name="date" class="form-control custom-date" required>
+                </div>
+
+                <div class="card" style="margin-bottom: 1%;">
+                    <div class="card-header">
+                        <h3>Add Task Details</h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="task-form">
+                            <table class="table table-bordered" id="task-table">
+                                <thead>
+                                    <tr>
+                                        <th>Task</th>
+                                        <th>Estimated Time</th>
+                                        <th>Category</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Initial row with input fields -->
+                                    <tr>
+                                        <td><input type="text" class="form-control" name="task[]" placeholder="Enter Task"></td>
+                                        <td>
+                                            
+                                <div class="row">
+                                    <div class="col-md-5">
+                                        <input type="number" class="form-control" name="hrs[]" placeholder="hrs" min="0" max='23' >
+                                    </div>
+                                    <div class="col-md-5">
+                                        <input type="number" class="form-control" name="mins[]" placeholder="mins" min="0" max="59">
+                                    </div>
+                                </div>
+                                        </td>
+                                        <td>
+                                            <select class="form-control" name="category[]">
+                                                <option value="Compulsory">Compulsory</option>
+                                                <option value="Optional">Optional</option>
+                                            </select>
+                                        </td>
+                                        <td><button type="button" class="btn btn-success add-row">+</button> <button type="button" class="btn btn-danger delete-row">Delete</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <input type="hidden" name="taskData" id="taskData" value="">
+                            <!-- Submit button to send data -->
+                            <button type="button" class="btn btn-primary" id="submit-btn">Submit</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            
+
+        </div>
+    </div>
+</div>
+
+
+{%endblock%}
+
+
+{% block extra_scripts %}
+<script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Add new row on clicking the plus sign
+            document.querySelector('#task-form').addEventListener('click', function (e) {
+                if (e.target && e.target.classList.contains('add-row')) {
+                    var currentRow = e.target.closest('tr');  // Find the row where the button was clicked
+                    var newRow = currentRow.cloneNode(true);  // Clone the clicked row
+                    newRow.querySelectorAll('input').forEach(input => input.value = '');  // Clear input values
+                    newRow.querySelector('select').selectedIndex = 0;  // Reset select to default value (Compulsory)
+
+                    // Insert the new row immediately after the clicked row
+                    currentRow.parentNode.insertBefore(newRow, currentRow.nextSibling);
+                }
+    
+                // Delete row on clicking delete button
+                if (e.target && e.target.classList.contains('delete-row')) {
+                    if (document.querySelectorAll('#task-table tbody tr').length > 1) {
+                        e.target.closest('tr').remove(); // Remove the clicked row
+                    } else {
+                        alert('At least one row must remain.');
+                    }
+                }
+            });
+    
+            // Submit form using fetch
+            document.getElementById('submit-btn').addEventListener('click', function () {
+                var taskData = {
+                    date: document.getElementById('date').value,
+                    tasks: [],
+                    hrs: [],
+                    mins: [],
+                    categories: []
+                };
+    
+                document.querySelectorAll('#task-table tbody tr').forEach(function (row) {
+                    var task = row.querySelector('input[name="task[]"]').value;
+                    var hrs = row.querySelector('input[name="hrs[]"]').value;
+                    var mins = row.querySelector('input[name="mins[]"]').value;
+                    var category = row.querySelector('select[name="category[]"]').value;
+    
+                    if (task && hrs && mins && category) {  // Ensure all fields are filled
+                        taskData.tasks.push(task);
+                        taskData.hrs.push(hrs);
+                        taskData.mins.push(mins);
+                        taskData.categories.push(category);
+                    }
+                });
+    
+                if (taskData.tasks.length > 0) {
+                    // Create a hidden form for submitting data via POST
+                    var form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '/add_plan/';  // The URL where you want to submit the data
+
+    
+                    // Add task data as hidden fields
+                    var taskDataField = document.createElement('input');
+                    taskDataField.type = 'hidden';
+                    taskDataField.name = 'taskData';  // Name this according to what your server expects
+                    taskDataField.value = JSON.stringify(taskData);
+                    form.appendChild(taskDataField);
+    
+                    // Append the form to the body (it won't be visible)
+                    document.body.appendChild(form);
+    
+                    // Submit the form programmatically
+                    form.submit();
+                } else {
+                    alert('Please fill out all fields before submitting.');
+                }
+            });
+    
+           
+        });
+    </script>
+
+{%endblock%}

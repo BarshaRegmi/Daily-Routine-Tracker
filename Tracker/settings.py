@@ -53,7 +53,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    # 'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -137,7 +137,7 @@ STATIC_URL = 'app/static/'
 
 # The directory where static files will be collected (for production use)
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),  # Add this line to tell Django where to find static files
+    os.path.join(BASE_DIR, STATIC_URL),  # Add this line to tell Django where to find static files
 ]
 
 # This will store static files that are collected using 'python manage.py collectstatic'

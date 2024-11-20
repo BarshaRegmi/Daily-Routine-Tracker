@@ -20,3 +20,26 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     padding: 2%;
 }
+
+/* Custom styling for the date input field */
+.custom-date {
+    border-radius: 8px; /* Make the corners rounded */
+    font-size: 16px; /* Adjust font size */
+    padding: 10px; /* Add padding for better spacing */
+    border: 2px solid #5AB0C4; /* Custom border color */
+    transition: border-color 0.3s ease, box-shadow 0.3s ease; /* Smooth transitions */
+}
+
+/* Change border color when the input is focused */
+.custom-date:focus {
+    border-color: #FF6F61; /* Change the border color on focus */
+    outline: none; /* Remove default outline */
+    box-shadow: 0 0 5px rgba(255, 111, 97, 0.5); /* Add a glow effect */
+}
+
+/* Optional: Smaller screens for better responsiveness */
+@media (max-width: 576px) {
+    .custom-date {
+        font-size: 14px; /* Adjust font size for small screens */
+    }
+}

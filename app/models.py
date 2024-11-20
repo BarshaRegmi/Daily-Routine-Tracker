@@ -38,5 +38,39 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['name', 'profession']
 
+    def __str__(self): 
+        return self.email 
+    
+class DayPlan(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    date = models.DateField()
+
+    class Meta:
+        unique_together = ('user', 'date')  # Ensure unique day-user combinations
+        ordering = ['date']
+
     def __str__(self):
-        return self.email
+        return f"{self.user.name} : {self.date}"
+    
+
+class Task(models.Model):
+
+    DayPlan = models.ForeignKey(DayPlan, on_delete=models.CASCADE, related_name='tasks')
+
+    task = models.CharField(max_length=1000)
+    is_completed = models.BooleanField(default=False)
+    remarks = models.CharField(max_length=1000, blank=True, null=True)
+    description = models.CharField(max_length=1000, blank=True, null=True)
+    estimated_time = models.TimeField()
+
+    CATEGORY_CHOICES = [
+        ('Compulsory', 'Compulsory'),
+        ('Optional', 'Optional'),
+    ]
+    
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
+
+
+    def __str__(self):
+        return f"{self.DayPlan.user.name} : {self.DayPlan.date} : {self.category}"
+    

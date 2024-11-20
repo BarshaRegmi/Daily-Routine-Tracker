@@ -1,13 +1,22 @@
 from django.shortcuts import render, redirect
-from .models import CustomUser
+from .models import CustomUser, DayPlan, Task
 from django.contrib.auth import login, authenticate, logout
+from datetime import time
+import json
+from datetime import date 
 
 def home(request):
-    if request.user.is_authenticated:
-        return render(request, 'index.html')
+    if not request.user.is_authenticated:
+        return render(request, 'login.html')
+    
+    user = request.user
+    today = date.today()
 
-
-    return render(request, 'login.html')
+    if DayPlan.objects.filter(user=user, date=today).exists():
+        plan = DayPlan.objects.get(user=user, date=today)
+        tasks = Task.objects.filter(DayPlan=plan)
+        print(tasks)
+    return render(request, 'index.html', {'tasks': tasks})
 
 def login_view(request):
     if request.method == 'GET':
@@ -57,10 +66,66 @@ def logout_view(request):
 
 
 def plans(request):
-    return redirect('home')
+    return render(request, 'plan.html')
 
 def analytics(request):
     return redirect('home')
 
 def completed(request):
     return redirect('home')
+
+def add_plan(request):
+    if request.method =="POST":
+
+        task_data = json.loads(request.POST.get('taskData'))
+            
+            # Extract data from the received JSON
+        date = task_data.get('date')
+        task = task_data.get('tasks', [])
+        hour = task_data.get('hrs', [])
+        minute = task_data.get('mins', [])
+        category = task_data.get('categories', [])
+
+        print(date, task, hour, minute, category)
+
+        
+        is_completed = False
+        user = request.user
+
+        if not date or not task or not category or not hour or not minute:
+            return render(request, 'plan.html', {'error': 'All fields are required'})
+
+        if not (len(task) == len(category) == len(hour) == len(minute)):
+            return render(request, 'plan.html', {'error': 'Mismatched data in tasks, categories, or times.'})
+    
+        plan, created = DayPlan.objects.get_or_create(user=user, date=date)    
+    
+        Task.objects.filter(DayPlan=plan).delete()
+        
+        for tsk,ctgory,hr,mins in zip(task,category,hour,minute):
+            print(hr, mins, tsk, ctgory)
+            estimated_time = time(hour = int(hr), minute = int(mins))
+            task = Task(DayPlan=plan, task=tsk, category=ctgory, estimated_time=estimated_time)
+            task.save()
+            print("task added")
+
+        return render(request, 'plan.html', {'success': 'Plan added successfully'})
+
+        
+def get_plans(request):
+    if request.method == 'GET':
+        user = request.user
+        date = request.GET.get('date')
+
+        if not date:
+            return render(request, 'plan.html', {'error': 'Date is required'})
+        
+        if DayPlan.objects.filter(user=user, date=date).exists():
+            plan = DayPlan.objects.get(user=user, date=date)
+            tasks = Task.objects.filter(DayPlan=plan)
+
+            return render(request, 'index ')
+        
+
+
+        

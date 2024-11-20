@@ -1,7 +1,7 @@
 # app/admin.py
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import CustomUser  # Import your custom user model
+from .models import CustomUser, DayPlan, Task  
 from django.utils.translation import gettext_lazy as _
 
 class CustomUserAdmin(UserAdmin):
@@ -33,3 +33,5 @@ class CustomUserAdmin(UserAdmin):
 
 # Register CustomUser with CustomUserAdmin
 admin.site.register(CustomUser, CustomUserAdmin)
+admin.site.register(DayPlan)
+admin.site.register(Task)

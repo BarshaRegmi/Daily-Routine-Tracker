@@ -30,7 +30,7 @@
                     {% for task in tasks %}
                     <tr>
                         <td>{{task.task}}</td>
-                        <td>{{task.time}} - {{task.completed}}</td>
+                        <td>{{task.estimated_time}} - </td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -50,6 +50,13 @@
                 <div class="card-body">
                     <h3 class="card-title text-left mb-4" >Streak</h3>
             
+                </div>
+            </div>
+
+            <div class="card card-container" style="width:100% ; margin-top: 5%">
+                <div class="card-body">
+                    <h3 class="card-title text-left mb-4" >Study With Me</h3>
+                    <a href="" class="btn btn-primary">Start</a>
                 </div>
             </div>
         </div>
