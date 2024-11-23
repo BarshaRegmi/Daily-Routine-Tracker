@@ -25,20 +25,14 @@
             flex-direction: column;
         }
 
-        .container {
-            flex-grow: 1;
-            margin-left: 5%;
-            margin-right: 0;
-            
-        }
-
+        
         .navbar-custom {
-            background-color: #5AB0C4;
+            background-color: #5Ab0c4;
         }
 
         .navbar-custom .navbar-brand,
         .navbar-custom .navbar-text {
-            color: whitesmoke;
+            color: rgb(26, 29, 7);
         }
 
         .navbar-nav .nav-item {
@@ -46,68 +40,122 @@
         }
 
         .navbar-nav .nav-item .nav-link {
-            color: #FFFFFF;
+            color: rgb(26, 29, 7);
         }
 
         .navbar-nav .nav-item .nav-link:hover {
-            color: #FFD700;
+            color: #031cff;
         }
-
-        /* Sidebar styling */
         .sidebar {
             position: fixed;
-            top: 0;
+            /*top: 56px; /* Adjusted to match the default height of a Bootstrap navbar (56px) */
+            
             left: 0;
-            height: auto;
-            width: 10%;
-            background-color: #5AB0C4;
-            margin-top: 10%;
-            border-radius: 0 10px 10px 0;
+           /* top : 30%; /**/
+            height: 100%; /* Full height */
+           /* height: calc(100% - 56px); /* Full height minus navbar height */
+            width: 5%;
+            background-color: #379daa;
             color: white;
-            overflow-y: auto;
+            display: flex; /* Use Flexbox */
+            flex-direction: column; /* Arrange items vertically */
+            justify-content: space-around; /* Evenly space icons within the sidebar */
+            align-items: center; /* Center align the icons horizontally */
+            padding: 10px 0; /* Optional padding */
+            z-index: 1000;
         }
-
+        
         .sidebar a {
-            display: block;
-            padding: 10%;
-            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             text-decoration: none;
-            font-size: 18px;
+            color: white;
         }
+        
+        .sidebar-icon {
+            width: 50%;
+            height: auto; /* Maintain aspect ratio */
+            margin-top: 10%;
+            margin-bottom: 10%; /* Space between icon and text box */
+        }
+        
+        .text-box {
+            display: none; /* Hide the text box by default */
+            position: absolute;
+            background-color: #444;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 10px;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            transform: translateY(-15px);
+        }
+        
+        .sidebar a:hover .text-box {
+            display: block; /* Show the text box */
+            opacity: 1;
+            transform: translateY(-20px);
+        }
+        
 
-        .sidebar a:hover {
-            background-color: #4A97AA;
-            color: #FFD700;
-        }
+
+/* Optional: Change icon opacity when hovered */
+.sidebar a:hover .sidebar-icon {
+    opacity: 0.7; /* Make icon slightly less opaque when hovering */
+}
+
 
         /* Main content styling with sidebar */
-        .content {
-            margin-left: 0%;
-            padding: 0%;
+
+
+        .container {
+            flex-grow: 1;
+            margin-left: 3%;
+  
         }
+
 
     /* Footer styling */
     footer {
         background-color: #343a40;
-        color: white;
-        padding: 1rem 0;
-        text-align: center;
-        margin-top: auto; 
-        margin-bottom: 0;
-       
-        bottom: 0; /* Stick it to the bottom of the page */
-        width: 100%; /* Ensure footer spans the entire width *//* Ensure footer is pushed to bottom */
+            color: white;
+            padding: 1rem 0;
+            text-align: center;
+            margin-top: auto;
+            margin-bottom: 0%;
+            z-index: 10;
+            bottom: 0;
     }
 
-
+    .footer-container {
+        flex-grow: 1;
+        position: relative;
+        bottom: 0;
+        margin: 0;
+        height: auto;
+    }
+    .routine-header {
+        
+        color: black;
+        text-align: left;
+        padding: 20px 0;
+        font-size: 30px;
+        font-weight: bold;
+        position: relative;
+        margin-left: 5%;
+        width: 100%;
+        z-index: 1; /* Ensure it is always on top */
+    }
     </style>
 
     {% block extra_head %}{% endblock %}
 </head>
 <body>
-
+    
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-custom">
+    <!-- <nav class="navbar navbar-expand-lg navbar-custom">
         <div class="container">
             <a class="navbar-brand" href="/">Routine Tracker</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -121,19 +169,38 @@
                 </ul>
             </div>
         </div>
-    </nav>
-
+    </nav> -->
+ 
     <!-- Sidebar -->
     <div class="sidebar">
-        <a href="{% url 'home' %}">Home</a>
-        <a href="{% url 'plans' %}">Plan</a>
-        <a href="{% url 'completed' %}">Completed</a>
-        <a href="{% url 'analytics' %}">Analytics</a>
+        <a href="{% url 'home' %}" class="sidebar-link">
+            <img src="{% static 'images/icons/home.png '%}" alt="Home" class="sidebar-icon">
+            <div class="text-box">Home</div>
+        </a>
+        <a href="{% url 'plans' %}" class="sidebar-link">
+            <img src="{% static 'images/icons/plan.png' %}" alt="Plan" class="sidebar-icon">
+            <div class="text-box">Plan</div>
+            
+        </a>
+        <a href="{% url 'completed' %}" class="sidebar-link">
+            <img src="{% static 'images/icons/completed.png '%}" alt="Completed" class="sidebar-icon">
+            <div class="text-box">Completed</div>
+        </a>
+        <a href="{% url 'analytics' %}" class="sidebar-link">
+            <img src="{% static 'images/icons/analysis.png '%}" alt="Analytics" class="sidebar-icon">
+            <div class="text-box">Analytics</div>
+        </a>
     </div>
+    
+
+    
 
     <!-- Main Content -->
-    <div class="content">
-        <div class="container mt-6">
+    <div class="content ">
+        <div class="container mt-2">
+            <div class="routine-header">
+                <h4>Routine Tracker</h4>
+            </div>
             {% block content %}
             <!-- Content will be injected here -->
             {% endblock %}
@@ -141,9 +208,9 @@
     </div>
 
     <!-- Footer -->
-    <footer class="bg-dark text-white text-center py-3 mt-4">
+    <!-- <footer class="bg-dark text-white text-center py-3 mt-4 footer-container">
         <p>&copy; {{ current_year }} Daily Routine Tracker. All Rights Reserved.</p>
-    </footer>
+    </footer> -->
 
     <!-- Bootstrap JS and dependencies -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>

@@ -44,6 +44,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 class DayPlan(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     date = models.DateField()
+    score = models.IntegerField(default=0)
 
     class Meta:
         unique_together = ('user', 'date')  # Ensure unique day-user combinations
@@ -74,3 +75,11 @@ class Task(models.Model):
     def __str__(self):
         return f"{self.DayPlan.user.name} : {self.DayPlan.date} : {self.category}"
     
+class info(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete = models.CASCADE, unique=True)
+    streak = models.Integerfield(default = 0)
+    photo = models.ImageField(upload_to='static/images/photos/', blank=True, null=True)
+    discipline_score = models.IntegerField(default = 0)
+
+    def __str__(self):
+        return f"{self.user.name}"

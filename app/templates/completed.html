@@ -1,0 +1,227 @@
+{% extends 'base2.html' %}
+
+{% block content %}
+{% load static %}
+<style>
+
+    label{margin-left: 20px;}
+    #datepicker{width:180px;}
+    #datepicker > span:hover{cursor: pointer;}
+
+    .card {
+        border-radius: 10px;
+    }
+    
+    .card-header {
+        background-color: #5AB0C4;
+        color: white;
+        text-align: center;
+    }
+    
+    .card-body {
+        background-color: #F0F8FF;
+    }
+    
+
+    .table th, .table td {
+        vertical-align: middle;
+    }
+
+    .edit-remarks {
+        cursor: pointer;
+        color: #007bff;
+    }
+
+    .edit-remarks:hover {
+        text-decoration: underline;
+    }
+
+    .tick-icon {
+        color: green;
+        font-size: 20px;
+        cursor: pointer;
+    }
+
+    .cross-icon {
+        color: red;
+        font-size: 20px;
+        cursor: pointer;
+    }
+
+    /* Container to prevent page scrolling */
+    .container {
+        max-width: 100%; /* Prevents horizontal scrolling */
+      /*  padding: 0 15px; /* Prevents content overflow */
+    }
+
+    /* Ensure the table becomes scrollable on smaller screens */
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch; /* Enables smooth scrolling on mobile */
+    }
+
+    .table {
+        width: 100%;
+        min-width: 600px; /* Ensures the table has a minimum width */
+    }
+
+    /* Prevent the body from scrolling if content overflows */
+    body {
+        max-width: 100%;
+        overflow-x:hidden;
+    }
+
+    .completed-card {
+        position: relative;
+        margin-right:5%;
+    }
+
+</style>
+
+<div class="container mt-2">
+    <div class="row">
+        <div class="col-md-12">
+            <h1>Completed Tasks, {{ user.name }}</h1>
+
+            <h5>{{ success }}{{ error }}</h5>
+            
+            
+            <div class="container mt-5" style="margin-right: 100%; width : 80%">
+                <form id = "date-form" method="GET" action="/completed/">
+                <div class="form-group" style="width: fit-content;">
+                    <label for="date" class="h5" style="font-size:larger;">Select Date</label>
+                    <input type="date" id="date" name="date" class="form-control custom-date" value = '{{date}}' required>
+                </div>
+
+                </form>
+
+                <div class="card">
+                <form id="task-status-form" method="POST" action="/update_completed/">
+                    <div class="card-header">
+                        <h3>Completed Task Details</h3>
+                    </div>
+                    <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Task</th>
+                                            <th>Category</th>
+                                            <th>Is Completed</th>
+                                            <th>Remarks</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for task in tasks %}
+                                        <tr>
+                                            <td>{{ task.task }}</td>
+                                            <td>{{ task.category }}</td>
+                                            <td>
+                                                <input type="checkbox" 
+                                                       class="is-completed-checkbox" 
+                                                       name="is_completed_{{ task.id }}" 
+                                                       {% if task.is_completed %}checked{% endif %}
+                                                       {% if not editable %}disabled{% endif %}>
+                                            </td>
+                                            <td>
+                                                
+                                                {% if editable %}
+                                                    <textarea 
+                                                        class="form-control" 
+                                                        name="remarks_{{ task.id }}" 
+                                                        rows="2"
+                                                        placeholder="Enter remarks">{{ task.remarks|default_if_none:'' }}</textarea>
+                                                {% else %}
+                                                    <div class="form-control-plaintext">
+                                                        {{ task.remarks|default_if_none:'' }}
+                                                    </div>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div> <!-- End of table-responsive -->
+
+                            {% if editable%}
+                            <button type="button" id="save-status-btn" class="btn btn-primary">Save</button>
+                            {% endif %}
+
+                            {% csrf_token %}
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const dateInput = document.getElementById('date');
+    const form = document.getElementById('date-form');
+
+    // Listen for changes to the date input
+    dateInput.addEventListener('change', function () {
+        // Submit the form when the date is changed
+        form.submit();
+    });
+
+    document.getElementById('save-status-btn').addEventListener('click', function () {
+        const form = document.getElementById('task-status-form');
+
+        // Remove any previously added hidden inputs to prevent duplicates
+        form.querySelectorAll('input.hidden-data').forEach(input => input.remove());
+
+        // Loop through each row to add hidden inputs for is_completed and remarks
+        document.querySelectorAll('#task-status-form tbody tr').forEach(row => {
+            // Get the checkbox and textarea elements
+            const checkbox = row.querySelector('.is-completed-checkbox');
+            const textarea = row.querySelector('textarea');
+
+            if (checkbox && textarea) {
+                // Extract task ID from the checkbox name
+                const taskId = checkbox.name.split('_')[2]; // Expected format: "is_completed_<script>"
+
+                // Checkbox value
+                const isCompleted = checkbox.checked;
+
+                // Remarks value
+                const remarks = textarea.value.trim();
+
+                // Add hidden input for is_completed
+                const isCompletedInput = document.createElement('input');
+                isCompletedInput.type = 'hidden';
+                isCompletedInput.name = `is_completed_${taskId}`;
+                isCompletedInput.value = isCompleted ? 'true' : 'false';
+                isCompletedInput.classList.add('hidden-data');
+                form.appendChild(isCompletedInput);
+
+                // Add hidden input for remarks
+                const remarksInput = document.createElement('input');
+                remarksInput.type = 'hidden';
+                remarksInput.name = `remarks_${taskId}`;
+                remarksInput.value = remarks;
+                remarksInput.classList.add('hidden-data');
+                form.appendChild(remarksInput);
+            }
+        });
+
+        document.querySelectorAll('#task-status-form tbody tr').forEach(row => {
+            // Get the checkbox and textarea elements
+            row.querySelector('.is-completed-checkbox').remove();
+            textarea = row.querySelector('textarea').remove();
+        });
+
+        // Submit the form
+        form.submit();
+    });
+});
+</script>
+
+{% endblock %}
