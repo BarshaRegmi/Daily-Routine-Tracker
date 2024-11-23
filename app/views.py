@@ -1,9 +1,9 @@
 from django.shortcuts import render, redirect
-from .models import CustomUser, DayPlan, Task
+from .models import *
 from django.contrib.auth import login, authenticate, logout
 from datetime import time
 import json
-from datetime import date 
+from datetime import date , datetime
 from django.contrib import messages
 from django.http import JsonResponse
 
@@ -20,8 +20,13 @@ def home(request):
 
     progress = 0
     if DayPlan.objects.filter(user=user, date=today).exists():
+
         plan = DayPlan.objects.get(user=user, date=today)
         tasks = Task.objects.filter(DayPlan=plan)
+        info = Info.objects.get(user = user)
+        print(info.streak)
+        streak = info.streak
+        score = plan.score
 
         completed_time = (0, 0)
         total_time = (0, 0)
@@ -34,7 +39,10 @@ def home(request):
         progress = (completed_time[0]*60 +completed_time[1])/(total_time[0]*60 + total_time[1])*100
         
     
-    return render(request, 'index.html', {'tasks': tasks, 'progress': progress})
+    return render(request, 'index.html', {'tasks': tasks, 
+                                          'progress': int(progress) , 
+                                          'streak': streak , 
+                                          'score': score})
 
 def login_view(request):
     if request.method == 'GET':
@@ -83,7 +91,7 @@ def logout_view(request):
 
 
 def plans(request):
-    return render(request, 'plan.html')
+    return render(request, 'plan.html', {'editable': True})
 
 def analytics(request):
     return redirect('home')
@@ -150,10 +158,10 @@ def add_plan(request):
         user = request.user
 
         if not date or not task or not category or not hour or not minute:
-            return render(request, 'plan.html', {'error': 'All fields are required'})
+            return render(request, 'plan.html', {'error': 'All fields are required', 'editable': True})
 
         if not (len(task) == len(category) == len(hour) == len(minute)):
-            return render(request, 'plan.html', {'error': 'Mismatched data in tasks, categories, or times.'})
+            return render(request, 'plan.html', {'error': 'Mismatched data in tasks, categories, or times.', 'editable': True})
     
         plan, created = DayPlan.objects.get_or_create(user=user, date=date)    
     
@@ -166,20 +174,44 @@ def add_plan(request):
             task.save()
             print("task added")
 
-        return render(request, 'plan.html', {'success': 'Plan added successfully'})
+        return render(request, 'plan.html', {'success': 'Plan added successfully', 'editable': True})
 
         
 def get_plans(request):
     if request.method == 'GET':
         user = request.user
-        date = request.GET.get('date')
-
-        if not date:
-            return JsonResponse({'error': 'Date is required'}, status=400)
+        day = request.GET.get('date')
         
-        if DayPlan.objects.filter(user=user, date=date).exists():
-            plan = DayPlan.objects.get(user=user, date=date)
+       
+        if not day:  # Check if day parameter is provided
+            return JsonResponse({'error': 'Date is required', 'editable': True}, status=400)
+
+       
+        try:
+            # Parse the date string into a date object
+            date_from_request = datetime.strptime(day, '%Y-%m-%d').date()
+        except ValueError:
+            return JsonResponse({'error': 'Invalid date format. Please use YYYY-MM-DD.', 'editable': True}, status=400)     
+        
+        print(date_from_request)
+
+        today = date.today()
+        if date_from_request<today:
+            print("date is less")
+            editable = False
+        else:
+            print("date is more")
+            editable = True
+
+       
+        
+        if DayPlan.objects.filter(user=user, date=day).exists():
+            plan = DayPlan.objects.get(user=user, date=day)
             tasks = Task.objects.filter(DayPlan=plan)
+
+            
+
+            
 
             task_data = []
             for task in tasks:
@@ -190,13 +222,14 @@ def get_plans(request):
                     'category': task.category,
                 })
             
-            return JsonResponse({'tasks': task_data})
+            print(task_data)
+            return JsonResponse({'tasks': task_data, 'editable': editable})
         
         # Return an empty tasks list if no DayPlan exists for the date
-        return JsonResponse({'tasks': []})
+        return JsonResponse({'tasks': [], 'editable': editable})
     
     # If the request method is not GET, return a 405 Method Not Allowed error
-    return JsonResponse({'error': 'Invalid request method'}, status=405)
+    return JsonResponse({'error': 'Invalid request method', 'editable':editable}, status=405)
         
 def update_completed(request):
     if request.method == 'POST':
@@ -205,24 +238,21 @@ def update_completed(request):
             for key, value in request.POST.items():
                 if key.startswith('is_completed_'):
                     # Extract task ID
-
-                    print(key, value)
                     task_id = key.split('_')[2]
                     is_completed = value == 'true'
-
 
 
                     # Get remarks for this task
                     remarks_key = f'remarks_{task_id}'
                     remarks = request.POST.get(remarks_key, '').strip()
 
-                    print(is_completed, remarks)
 
                     # Update the task in the database
                     Task.objects.filter(id=task_id).update(
                         is_completed=is_completed,
                         remarks=remarks
                     )
+                    
 
             messages.success(request, "Tasks updated successfully.")
         except Exception as e:

@@ -10,6 +10,7 @@
 
     .card {
         border-radius: 10px;
+        margin-bottom: 5%;
     }
     
     .card-header {
@@ -49,10 +50,10 @@
     }
 
     /* Container to prevent page scrolling */
-    .container {
+    /*.content {
         max-width: 100%; /* Prevents horizontal scrolling */
       /*  padding: 0 15px; /* Prevents content overflow */
-    }
+    /*}*/
 
     /* Ensure the table becomes scrollable on smaller screens */
     .table-responsive {
@@ -66,7 +67,7 @@
     }
 
     /* Prevent the body from scrolling if content overflows */
-    body {
+  body {
         max-width: 100%;
         overflow-x:hidden;
     }
@@ -86,7 +87,7 @@
             <h5>{{ success }}{{ error }}</h5>
             
             
-            <div class="container mt-5" style="margin-right: 100%; width : 80%">
+            <div class="container mt-5" style="padding:0%">
                 <form id = "date-form" method="GET" action="/completed/">
                 <div class="form-group" style="width: fit-content;">
                     <label for="date" class="h5" style="font-size:larger;">Select Date</label>
@@ -144,7 +145,7 @@
                             </div> <!-- End of table-responsive -->
 
                             {% if editable%}
-                            <button type="button" id="save-status-btn" class="btn btn-primary">Save</button>
+                            <button type="button" id="save-status-btn" class="btn btn-primary" style="margin-top: 3%;">Save</button>
                             {% endif %}
 
                             {% csrf_token %}

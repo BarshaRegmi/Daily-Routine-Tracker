@@ -46,6 +46,51 @@
         .navbar-nav .nav-item .nav-link:hover {
             color: #031cff;
         }
+
+        /* Mini Sidebar (Top Toggle Bar) */
+.mini-sidebar {
+    width: 5%;
+    height: auto; /* Height for the toggle bar */
+    background-color: transparent; /* Matches sidebar color */
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    z-index: 1001; /* Above the sidebar */
+    position: fixed;
+    transition: background-color 0.3s ease;
+    margin-top: 5px;
+    
+}
+
+/* Toggle Button */
+.toggle-btn {
+    background: none;
+    border: none;
+    color: black;
+    font-size: 24px;
+    margin-left: 5px;
+    cursor: pointer;
+    
+}
+
+/* Main Sidebar */
+/*.sidebar {
+    position: fixed;
+    top: 56px; 
+    left: 0;
+    width: 250px;
+    height: calc(100% - 56px); 
+    background-color: #379daa;
+    transition: transform 0.3s ease;
+    transform: translateX(0); 
+    z-index: 1000;
+}
+
+
+/* Hidden Sidebar */
+.sidebar.hide {
+    transform: translateX(-100%); /* Fully hidden */
+}
         .sidebar {
             position: fixed;
             /*top: 56px; /* Adjusted to match the default height of a Bootstrap navbar (56px) */
@@ -54,18 +99,30 @@
            /* top : 30%; /**/
             height: 100%; /* Full height */
            /* height: calc(100% - 56px); /* Full height minus navbar height */
-            width: 5%;
+            width: 65px;
             background-color: #379daa;
             color: white;
             display: flex; /* Use Flexbox */
             flex-direction: column; /* Arrange items vertically */
-            justify-content: space-around; /* Evenly space icons within the sidebar */
+            justify-content: flex-start; /* Evenly space icons within the sidebar */
             align-items: center; /* Center align the icons horizontally */
             padding: 10px 0; /* Optional padding */
+            padding-top:56px;
             z-index: 1000;
+        }
+        .sidebar::before {
+            content: '';
+            position: absolute;
+            top: 50px; /* 56px from the top of the sidebar */
+            left: 0;
+            width: 100%; /* Full width */
+            height: 2px; /* Thickness of the line */
+            background-color: black; /* Color of the line */
+            z-index: -1; /* Ensure it's behind the content */
         }
         
         .sidebar a {
+             /* Adjusted to match the default height of a Bootstrap navbar (56px) */
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -74,10 +131,10 @@
         }
         
         .sidebar-icon {
-            width: 50%;
+            width: 45%;
             height: auto; /* Maintain aspect ratio */
-            margin-top: 10%;
-            margin-bottom: 10%; /* Space between icon and text box */
+            margin-top: 20%;
+            margin-bottom: 30%; /* Space between icon and text box */
         }
         
         .text-box {
@@ -90,52 +147,75 @@
             color: white;
             opacity: 0;
             transition: opacity 0.3s ease, transform 0.3s ease;
-            transform: translateY(-15px);
+            
         }
         
         .sidebar a:hover .text-box {
             display: block; /* Show the text box */
             opacity: 1;
-            transform: translateY(-20px);
+            
         }
         
 
-
-/* Optional: Change icon opacity when hovered */
-.sidebar a:hover .sidebar-icon {
-    opacity: 0.7; /* Make icon slightly less opaque when hovering */
-}
-
+        
+        .sidebar-link {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            padding: 10px;
+            color: #333; /* Default text color */
+            transition: background-color 0.3s ease;
+        }
+        
+        .sidebar-icon-container {
+            width: 50px; /* Size of the circle */
+            height: 50px; /* Size of the circle */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%; /* Circular shape */
+            background-color: #379daa; /* Default background */
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+        
+        .sidebar-icon {
+            width: 30px; /* Adjust the icon size */
+            height: 30px; /* Adjust the icon size */
+            transition: opacity 0.3s ease;
+        }
+        
+        /* Highlighting the active link */
+        .sidebar-link.active .sidebar-icon-container {
+            background-color: #2f8591; /* Darker background when active */
+            transform: scale(1.1); /* Slightly enlarge the circle for emphasis */
+        }
+        
+        .sidebar-link.active .sidebar-icon {
+            opacity: 1; /* Keep the icon visible */
+        }
+        
+        .sidebar-link.active .text-box {
+            font-weight: bold; /* Optional: Make the text bold for active state */
+            color: #2f8591; /* Change the text color when active */
+            margin-top: 5px; /* Add space between the icon and the text */
+        }
 
         /* Main content styling with sidebar */
 
 
-        .container {
+        .content {
             flex-grow: 1;
-            margin-left: 3%;
-  
+            margin-left: 1%;
+            transition: margin-left 0.3s ease;
         }
 
+       
 
     /* Footer styling */
-    footer {
-        background-color: #343a40;
-            color: white;
-            padding: 1rem 0;
-            text-align: center;
-            margin-top: auto;
-            margin-bottom: 0%;
-            z-index: 10;
-            bottom: 0;
-    }
+    
 
-    .footer-container {
-        flex-grow: 1;
-        position: relative;
-        bottom: 0;
-        margin: 0;
-        height: auto;
-    }
+    
     .routine-header {
         
         color: black;
@@ -148,50 +228,64 @@
         width: 100%;
         z-index: 1; /* Ensure it is always on top */
     }
+
+    .sidebar.hide + .content{
+        margin-left: 0; /* Full width when sidebar is hidden */
+        padding: 0%;
+    }
+
+    .container{
+        padding-left: 1%;
+        padding-right:1%;
+    }
+
+    /* Reduce opacity for body when sidebar is visible */
+    .content.dimmed {
+        opacity: 0.5; /* Adjust to your liking */
+        pointer-events: none; /* Prevent interaction if desired */
+        transition: opacity 0.3s ease; /* Smooth transition */
+    }
+    
+
     </style>
 
     {% block extra_head %}{% endblock %}
 </head>
 <body>
     
-    <!-- Navbar -->
-    <!-- <nav class="navbar navbar-expand-lg navbar-custom">
-        <div class="container">
-            <a class="navbar-brand" href="/">Routine Tracker</a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ml-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/">Profile</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav> -->
- 
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <a href="{% url 'home' %}" class="sidebar-link">
-            <img src="{% static 'images/icons/home.png '%}" alt="Home" class="sidebar-icon">
-            <div class="text-box">Home</div>
-        </a>
-        <a href="{% url 'plans' %}" class="sidebar-link">
-            <img src="{% static 'images/icons/plan.png' %}" alt="Plan" class="sidebar-icon">
-            <div class="text-box">Plan</div>
-            
-        </a>
-        <a href="{% url 'completed' %}" class="sidebar-link">
-            <img src="{% static 'images/icons/completed.png '%}" alt="Completed" class="sidebar-icon">
-            <div class="text-box">Completed</div>
-        </a>
-        <a href="{% url 'analytics' %}" class="sidebar-link">
-            <img src="{% static 'images/icons/analysis.png '%}" alt="Analytics" class="sidebar-icon">
-            <div class="text-box">Analytics</div>
-        </a>
-    </div>
     
+    <div class="mini-sidebar">
+        <button id="toggle-btn" class="toggle-btn">&#9776;</button>
+    </div>
+
+  <!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+    <a href="{% url 'home' %}" class="sidebar-link {% if request.path == '/' %}active{% endif %}">
+        <div class="sidebar-icon-container">
+            <img src="{% static 'images/icons/home.png' %}" alt="Home" class="sidebar-icon">
+        </div>
+        <div class="text-box">Home</div>
+    </a>
+    <a href="{% url 'plans' %}" class="sidebar-link {% if request.path == '/plans/' %}active{% endif %}">
+        <div class="sidebar-icon-container">
+            <img src="{% static 'images/icons/plan.png' %}" alt="Plan" class="sidebar-icon">
+        </div>
+        <div class="text-box">Plan</div>
+    </a>
+    <a href="{% url 'completed' %}" class="sidebar-link {% if request.path == '/completed/' %}active{% endif %}">
+        <div class="sidebar-icon-container">
+            <img src="{% static 'images/icons/completed.png' %}" alt="Completed" class="sidebar-icon">
+        </div>
+        <div class="text-box">Completed</div>
+    </a>
+    <a href="{% url 'analytics' %}" class="sidebar-link {% if request.path == '/analytics/' %}active{% endif %}">
+        <div class="sidebar-icon-container">
+            <img src="{% static 'images/icons/analysis.png' %}" alt="Analytics" class="sidebar-icon">
+        </div>
+        <div class="text-box">Analytics</div>
+    </a>
+</div>
+
 
     
 
@@ -219,6 +313,41 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+
+        document.addEventListener('DOMContentLoaded', function () {
+
+            const sidebar = document.getElementById('sidebar');
+            if (window.innerWidth < 660) {
+                sidebar.classList.add('hide');
+            }
+        });
+
+      document.getElementById('toggle-btn').addEventListener('click', function () {
+    const sidebar = document.getElementById('sidebar');
+    const miniSidebar = document.querySelector('.mini-sidebar');
+    const content = document.querySelector('.content');
+    
+    
+    
+    sidebar.classList.toggle('hide');
+    
+    console.log(window.innerWidth);
+    if (window.innerWidth < 660) {
+        console.log('Mobile');
+        if (!sidebar.classList.contains('hide')) {
+            console.log('Sidebar is visible');
+            content.classList.add('dimmed');
+        } else {
+            content.classList.remove('dimmed');
+        }
+    }
+
+
+});
+    </script>
+
 
     {% block extra_scripts %}{% endblock %}
 </body>

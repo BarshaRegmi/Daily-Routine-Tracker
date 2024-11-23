@@ -10,6 +10,7 @@
 
     .card {
         border-radius: 10px;
+        margin-bottom: 5%;
     }
     
     .card-header {
@@ -30,7 +31,42 @@
         margin-top: 5px;
         font-size: 20px;
     }
+
+  /*   .content {
+        max-width: 100%; /* Prevents horizontal scrolling */
+ /*       padding: 0 15px; Prevents content overflow */
+    /*}*/
+
+    body {
+        max-width: 100%;
+        overflow-x:hidden;
+    }
+    #task-table input[type="text"], #task-table input[type="number"] {
+        min-width: 120px; /* Adjust this value as needed */
+    }
     
+    #task-table .row {
+        display: flex;
+        flex-wrap: nowrap; /* Prevent the row from wrapping */
+    }
+
+    #task-table .col-md-5 {
+        min-width: 90px; /* Ensure both the hours and minutes columns have a minimum width */
+        flex: 1; /* Allow each column to take equal width */
+        padding: 0 5px; /* Small padding for spacing */
+    }
+
+    #task-table input[type="number"] {
+        width: 100%; /* Make inputs take the full width of the column */
+    }
+
+    /* Optionally, adjust padding for better spacing */
+    #task-table td {
+        padding: 10px;
+    }
+
+    
+
 </style>
 
 
@@ -42,13 +78,13 @@
 
            <h5>{{success}}{{error}}</h5>
 
-            <div class="container mt-5" >
-                <div class="form-group" style="width: fit-content;">
-                    <label for="date" class="h5" style="font-size:larger;">Select Date</label>
+            <div class="container mt-5" style="padding:0%">
+                <div class="form-group" style="width: fit-content; justify-items:flex-start">
+                    <label for="date" class="h5" style="font-size:larger; ">Select Date</label>
                     <input type="date" id="date" name="date" class="form-control custom-date" required>
                 </div>
 
-                <div class="card" style="margin-bottom: 1%;">
+                <div class="card">
                     <div class="card-header">
                         <h3>Add Task Details</h3>
                     </div>
@@ -67,33 +103,51 @@
                                 <tbody>
                                     <!-- Initial row with input fields -->
                                     <tr>
-                                        <td><input type="text" class="form-control" name="task[]" placeholder="Enter Task"></td>
                                         <td>
-                                            
-                                <div class="row">
-                                    <div class="col-md-5">
-                                        <input type="number" class="form-control" name="hrs[]" placeholder="hrs" min="0" max='23' >
-                                    </div>
-                                    <div class="col-md-5">
-                                        <input type="number" class="form-control" name="mins[]" placeholder="mins" min="0" max="59">
-                                    </div>
-                                </div>
+                                            {% if editable %}
+                                                <input type="text" class="form-control" name="task[]" placeholder="Enter Task">
+                                            {% else %}
+                                                <input type="text" class="form-control" name="task[]" value="{{ task.name }}" readonly>
+                                            {% endif %}
                                         </td>
                                         <td>
-                                            <select class="form-control" name="category[]">
-                                                <option value="Compulsory">Compulsory</option>
-                                                <option value="Optional">Optional</option>
+                                            <div class="row">
+                                                <div class="col-md-5">
+                                                    {% if editable %}
+                                                        <input type="number" class="form-control" name="hrs[]" placeholder="hrs" min="0" max='23'>
+                                                    {% else %}
+                                                        <input type="text" class="form-control" value="{{ task.hours }}" readonly>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="col-md-5">
+                                                    {% if editable %}
+                                                        <input type="number" class="form-control" name="mins[]" placeholder="mins" min="0" max="59">
+                                                    {% else %}
+                                                        <input type="text" class="form-control" value="{{ task.minutes }}" readonly>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <select class="form-control" name="category[]" {% if not editable %} disabled {% endif %}>
+                                                <option value="Compulsory" {% if task.category == 'Compulsory' %} selected {% endif %}>Compulsory</option>
+                                                <option value="Optional" {% if task.category == 'Optional' %} selected {% endif %}>Optional</option>
                                             </select>
                                         </td>
-                                        <td><button type="button" class="btn btn-success add-row">+</button> <button type="button" class="btn btn-danger delete-row">Delete</button></td>
+                                        <td>
+                                            {% if editable %}
+                                                <button type="button" class="btn btn-success add-row">+</button>
+                                                <button type="button" class="btn btn-danger delete-row">Delete</button>
+                                            {% endif %}
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
-                            <input type="hidden" name="taskData" id="taskData" value="">
-                            <!-- Submit button to send data -->
-                            <button type="button" class="btn btn-primary" id="submit-btn">Submit</button>
-                        </form>
+                        <input type="hidden" name="taskData" id="taskData" value="">
+                        <button type="button" class="btn btn-primary" id="submit-btn" style="margin-top: 3%;">Submit</button>
+                    </form>
+
                     </div>
                 </div>
             </div>
@@ -110,11 +164,11 @@
 
 {% block extra_scripts %}
 <script>
-        document.addEventListener('DOMContentLoaded', function () {
-
-            // Fetch and update table when date is selected
+    document.addEventListener('DOMContentLoaded', function () {
+        // Fetch and update table when date is selected
         document.getElementById('date').addEventListener('change', function () {
             var selectedDate = this.value;
+            this.style.border = '';  // Reset border style
             
             if (selectedDate) {
                 // Perform a GET request with the selected date as a parameter
@@ -124,54 +178,72 @@
                         // Clear the existing table rows
                         var tbody = document.querySelector('#task-table tbody');
                         tbody.innerHTML = '';
-
+                        
+                        console.log(data.editable);
+    
                         if (data && data.tasks && data.tasks.length > 0) {
                             // Populate table with the fetched data
                             data.tasks.forEach((task, index) => {
                                 var row = tbody.insertRow();
                                 row.innerHTML = `
-                                    <td><input type="text" class="form-control" name="task[]" value="${task.name}" placeholder="Enter Task"></td>
+                                    <td>
+                                        ${data.editable ? `<input type="text" class="form-control" name="task[]" value="${task.name}" placeholder="Enter Task">` : `<input type="text" class="form-control" value="${task.name}" disabled>`}
+                                    </td>
                                     <td>
                                         <div class="row">
                                             <div class="col-md-5">
-                                                <input type="number" class="form-control" name="hrs[]" value="${task.hours}" min="0" max="23">
+                                                ${data.editable ? `<input type="number" class="form-control" name="hrs[]" value="${task.hours}" min="0" max="23">` : `<input type="text" class="form-control" value="${task.hours}" disabled>`}
                                             </div>
                                             <div class="col-md-5">
-                                                <input type="number" class="form-control" name="mins[]" value="${task.minutes}" min="0" max="59">
+                                                ${data.editable ? `<input type="number" class="form-control" name="mins[]" value="${task.minutes}" min="0" max="59">` : `<input type="text" class="form-control" value="${task.minutes}" disabled>`}
                                             </div>
                                         </div>
                                     </td>
                                     <td>
-                                        <select class="form-control" name="category[]">
-                                            <option value="Compulsory" ${task.category === 'Compulsory' ? 'selected' : ''}>Compulsory</option>
-                                            <option value="Optional" ${task.category === 'Optional' ? 'selected' : ''}>Optional</option>
-                                        </select>
+                                        ${data.editable ? `
+                                            <select class="form-control" name="category[]">
+                                                <option value="Compulsory" ${task.category === 'Compulsory' ? 'selected' : ''}>Compulsory</option>
+                                                <option value="Optional" ${task.category === 'Optional' ? 'selected' : ''}>Optional</option>
+                                            </select>
+                                        ` : `<input type="text" class="form-control" value="${task.category}" disabled>`}
                                     </td>
-                                    <td><button type="button" class="btn btn-success add-row">+</button> <button type="button" class="btn btn-danger delete-row">Delete</button></td>
+                                    <td>
+                                        ${data.editable ? `
+                                            <button type="button" class="btn btn-success add-row">+</button>
+                                            <button type="button" class="btn btn-danger delete-row">Delete</button>
+                                        ` : ''}
+                                    </td>
                                 `;
                             });
                         } else {
                             // If no tasks returned, show the default empty row
                             var row = tbody.insertRow();
                             row.innerHTML = `
-                                <td><input type="text" class="form-control" name="task[]" placeholder="Enter Task"></td>
+                                <td>${data.editable ? '<input type="text" class="form-control" name="task[]" placeholder="Enter Task">' : '<input type="text" class="form-control" disabled>'}</td>
                                 <td>
                                     <div class="row">
                                         <div class="col-md-5">
-                                            <input type="number" class="form-control" name="hrs[]" placeholder="hrs" min="0" max="23">
+                                            ${data.editable ? '<input type="number" class="form-control" name="hrs[]" placeholder="hrs" min="0" max="23">' : '<input type="text" class="form-control" disabled>'}
                                         </div>
                                         <div class="col-md-5">
-                                            <input type="number" class="form-control" name="mins[]" placeholder="mins" min="0" max="59">
+                                            ${data.editable ? '<input type="number" class="form-control" name="mins[]" placeholder="mins" min="0" max="59">' : '<input type="text" class="form-control" disabled>'}
                                         </div>
                                     </div>
                                 </td>
                                 <td>
-                                    <select class="form-control" name="category[]">
-                                        <option value="Compulsory">Compulsory</option>
-                                        <option value="Optional">Optional</option>
-                                    </select>
+                                    ${data.editable ? `
+                                        <select class="form-control" name="category[]">
+                                            <option value="Compulsory">Compulsory</option>
+                                            <option value="Optional">Optional</option>
+                                        </select>
+                                    ` : `<input type="text" class="form-control" value="Compulsory" disabled>`}
                                 </td>
-                                <td><button type="button" class="btn btn-success add-row">+</button> <button type="button" class="btn btn-danger delete-row">Delete</button></td>
+                                <td>
+                                    ${data.editable ? `
+                                        <button type="button" class="btn btn-success add-row">+</button>
+                                        <button type="button" class="btn btn-danger delete-row">Delete</button>
+                                    ` : ''}
+                                </td>
                             `;
                         }
                     })
@@ -180,80 +252,101 @@
                     });
             }
         });
-
-
-            // Add new row on clicking the plus sign
-            document.querySelector('#task-form').addEventListener('click', function (e) {
-                if (e.target && e.target.classList.contains('add-row')) {
-                    var currentRow = e.target.closest('tr');  // Find the row where the button was clicked
-                    var newRow = currentRow.cloneNode(true);  // Clone the clicked row
-                    newRow.querySelectorAll('input').forEach(input => input.value = '');  // Clear input values
-                    newRow.querySelector('select').selectedIndex = 0;  // Reset select to default value (Compulsory)
-
-                    // Insert the new row immediately after the clicked row
-                    currentRow.parentNode.insertBefore(newRow, currentRow.nextSibling);
-                }
     
-                // Delete row on clicking delete button
-                if (e.target && e.target.classList.contains('delete-row')) {
-                    if (document.querySelectorAll('#task-table tbody tr').length > 1) {
-                        e.target.closest('tr').remove(); // Remove the clicked row
-                    } else {
-                        alert('At least one row must remain.');
-                    }
-                }
-            });
+        // Add new row on clicking the plus sign
+        document.querySelector('#task-form').addEventListener('click', function (e) {
+            if (e.target && e.target.classList.contains('add-row')) {
+                var currentRow = e.target.closest('tr');  // Find the row where the button was clicked
+                var newRow = currentRow.cloneNode(true);  // Clone the clicked row
+                newRow.querySelectorAll('input').forEach(input => input.value = '');  // Clear input values
+                newRow.querySelector('select').selectedIndex = 0;  // Reset select to default value (Compulsory)
     
-            // Submit form using fetch
-            document.getElementById('submit-btn').addEventListener('click', function () {
-                var taskData = {
-                    date: document.getElementById('date').value,
-                    tasks: [],
-                    hrs: [],
-                    mins: [],
-                    categories: []
-                };
+                // Insert the new row immediately after the clicked row
+                currentRow.parentNode.insertBefore(newRow, currentRow.nextSibling);
+            }
     
-                document.querySelectorAll('#task-table tbody tr').forEach(function (row) {
-                    var task = row.querySelector('input[name="task[]"]').value;
-                    var hrs = row.querySelector('input[name="hrs[]"]').value;
-                    var mins = row.querySelector('input[name="mins[]"]').value;
-                    var category = row.querySelector('select[name="category[]"]').value;
-    
-                    if (task && hrs && mins && category) {  // Ensure all fields are filled
-                        taskData.tasks.push(task);
-                        taskData.hrs.push(hrs);
-                        taskData.mins.push(mins);
-                        taskData.categories.push(category);
-                    }
-                });
-    
-                if (taskData.tasks.length > 0) {
-                    // Create a hidden form for submitting data via POST
-                    var form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = '/add_plan/';  // The URL where you want to submit the data
-
-    
-                    // Add task data as hidden fields
-                    var taskDataField = document.createElement('input');
-                    taskDataField.type = 'hidden';
-                    taskDataField.name = 'taskData';  // Name this according to what your server expects
-                    taskDataField.value = JSON.stringify(taskData);
-                    form.appendChild(taskDataField);
-    
-                    // Append the form to the body (it won't be visible)
-                    document.body.appendChild(form);
-    
-                    // Submit the form programmatically
-                    form.submit();
+            // Delete row on clicking delete button
+            if (e.target && e.target.classList.contains('delete-row')) {
+                if (document.querySelectorAll('#task-table tbody tr').length > 1) {
+                    e.target.closest('tr').remove(); // Remove the clicked row
                 } else {
-                    alert('Please fill out all fields before submitting.');
+                    alert('At least one row must remain.');
+                }
+            }
+        });
+    
+        // Ensure max limit for hours and minutes
+        document.querySelector('#task-form').addEventListener('input', function (e) {
+            if (e.target && (e.target.name === 'hrs[]' || e.target.name === 'mins[]')) {
+                var value = parseInt(e.target.value);
+                if (e.target.name === 'hrs[]' && value > 23) {
+                    e.target.value = 23;
+                } else if (e.target.name === 'mins[]' && value > 59) {
+                    e.target.value = 59;
+                } else if (e.target.name === 'hrs[]' && value < 0) {
+                    e.target.value = 0;
+                } else if (e.target.name === 'mins[]' && value < 0) {
+                    e.target.value = 0;
+                }
+            }
+        });
+    
+        // Submit form using fetch
+        document.getElementById('submit-btn').addEventListener('click', function () {
+            var selectedDate = document.getElementById('date');
+    
+            if (!selectedDate.value) {
+                selectedDate.style.border = '2px solid red';
+                alert('Please select a date before submitting.');
+                return; // Prevent form submission
+            }
+    
+            var taskData = {
+                date: document.getElementById('date').value,
+                tasks: [],
+                hrs: [],
+                mins: [],
+                categories: []
+            };
+    
+            document.querySelectorAll('#task-table tbody tr').forEach(function (row) {
+                var task = row.querySelector('input[name="task[]"]').value;
+                var hrs = row.querySelector('input[name="hrs[]"]').value;
+                var mins = row.querySelector('input[name="mins[]"]').value;
+                var category = row.querySelector('select[name="category[]"]').value;
+    
+                if (task && hrs && mins && category) {  // Ensure all fields are filled
+                    taskData.tasks.push(task);
+                    taskData.hrs.push(hrs);
+                    taskData.mins.push(mins);
+                    taskData.categories.push(category);
                 }
             });
     
-           
+            if (taskData.tasks.length > 0) {
+                // Create a hidden form for submitting data via POST
+                var form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/add_plan/';  // The URL where you want to submit the data
+    
+                // Add task data as hidden fields
+                var taskDataField = document.createElement('input');
+                taskDataField.type = 'hidden';
+                taskDataField.name = 'taskData';  // Name this according to what your server expects
+                taskDataField.value = JSON.stringify(taskData);
+                form.appendChild(taskDataField);
+    
+                // Append the form to the body (it won't be visible)
+                document.body.appendChild(form);
+    
+                // Submit the form programmatically
+                form.submit();
+            } else {
+                alert('Please fill out all fields before submitting.');
+            }
         });
+    });
+    
     </script>
 
 {%endblock%}

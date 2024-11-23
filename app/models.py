@@ -75,11 +75,14 @@ class Task(models.Model):
     def __str__(self):
         return f"{self.DayPlan.user.name} : {self.DayPlan.date} : {self.category}"
     
-class info(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete = models.CASCADE, unique=True)
-    streak = models.Integerfield(default = 0)
+class Info(models.Model):
+    user = models.OneToOneField(CustomUser, on_delete = models.CASCADE)
+    streak = models.IntegerField(default = 0)
     photo = models.ImageField(upload_to='static/images/photos/', blank=True, null=True)
     discipline_score = models.IntegerField(default = 0)
+    freeze_available = models.IntegerField(default = 3)
+    last_freeze_used = models.DateField(blank=True, null=True)
+
 
     def __str__(self):
         return f"{self.user.name}"
