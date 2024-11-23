@@ -22,15 +22,15 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
+                    <!-- <tr>
                         <td>Wake up</td>
                         <td>6:00 AM - Completed</td>
-                    </tr>
+                    </tr> -->
 
                     {% for task in tasks %}
                     <tr>
                         <td>{{task.task}}</td>
-                        <td>{{task.estimated_time}} - </td>
+                        <td>{% if task.is_completed %}Completed{%else%} {% endif %}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -50,16 +50,16 @@
                 <div class="card-body">
                     <h3 class="card-title text-left mb-4" >Streak</h3>
                     
-                    <div class="d-flex align-items-center mb-4">
-                        <h3 class="card-title me-3">{{streak}}</h3>
-                        <img src="{% static 'images/icons/fire.png' %}" alt="streak" style="width: 15%; height: auto; object-fit: cover;">
+                    <div class="d-flex align-items-center mb-4" >
+                        <h1 class="card-title me-3">{{streak}}🔥</h1>
+                        <!-- <img src="{% static 'images/icons/fire.png' %}" alt="streak" style="width: 15%; height: auto; object-fit: cover;"> -->
                     </div>
                     
                     <hr style="border: none; height: 2px; background: #ccc; box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);">
 
                     <h3 class="card-title text-left mb-4" >Today's Score</h3>
                     <div class="d-flex align-items-center mb-4">
-                        <h3 class="card-title me-3">{{score}}</h3>
+                        <h3 class="card-title me-3">{{score}}  </h3>
                         
                     </div>
                 </div>

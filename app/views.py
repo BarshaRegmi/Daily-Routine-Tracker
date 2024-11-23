@@ -197,21 +197,13 @@ def get_plans(request):
 
         today = date.today()
         if date_from_request<today:
-            print("date is less")
             editable = False
         else:
-            print("date is more")
-            editable = True
-
-       
+            editable = True 
         
         if DayPlan.objects.filter(user=user, date=day).exists():
             plan = DayPlan.objects.get(user=user, date=day)
             tasks = Task.objects.filter(DayPlan=plan)
-
-            
-
-            
 
             task_data = []
             for task in tasks:
@@ -222,7 +214,7 @@ def get_plans(request):
                     'category': task.category,
                 })
             
-            print(task_data)
+            
             return JsonResponse({'tasks': task_data, 'editable': editable})
         
         # Return an empty tasks list if no DayPlan exists for the date
@@ -234,6 +226,7 @@ def get_plans(request):
 def update_completed(request):
     if request.method == 'POST':
         try:
+            streak = True
             # Iterate over POST data to update tasks
             for key, value in request.POST.items():
                 if key.startswith('is_completed_'):
@@ -258,12 +251,40 @@ def update_completed(request):
         except Exception as e:
             messages.error(request, f"An error occurred: {e}")
 
+        check_and_update_streak(request.user)
         # Redirect back to the completed tasks page
         return redirect('/completed/')
 
     # If not a POST request, redirect to the tasks page
     return redirect('/completed/')
-        
+
+
+def check_and_update_streak(CustomUser):
+    today = date.today()
+    
+    if DayPlan.objects.filter(user = CustomUser, date = today):
+        dayPlan = DayPlan.objects.get(user = CustomUser, date = today)
+        if dayPlan.completed:
+            return True
+        else:
+            tasks = Task.objects.filter(DayPlan = dayPlan)
+            
+            flag = True
+            for task in tasks:
+                if not task.is_completed and task.category == 'Compulsory':
+                    flag = False
+                    return False
+
+            if flag:
+                dayPlan.completed = True
+                info = Info.objects.get(user = CustomUser)
+                info.streak += 1
+                info.save()
+                dayPlan.save()
+                return True
+    else:
+        return False
+ 
 
 def get_progress(request):
     if request.method == 'GET':

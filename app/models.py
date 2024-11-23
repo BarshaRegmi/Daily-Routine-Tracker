@@ -45,6 +45,7 @@ class DayPlan(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     date = models.DateField()
     score = models.IntegerField(default=0)
+    completed = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ('user', 'date')  # Ensure unique day-user combinations
