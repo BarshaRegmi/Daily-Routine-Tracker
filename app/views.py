@@ -3,9 +3,20 @@ from .models import *
 from django.contrib.auth import login, authenticate, logout
 from datetime import time
 import json
-from datetime import date , datetime
+from datetime import date , datetime, timedelta
 from django.contrib import messages
 from django.http import JsonResponse
+from .tasks import your_midnight_task
+
+def add_times(time1, time2):
+    """
+    Add two `datetime.time` objects and return the resulting `datetime.time`.
+    Handles overflow of minutes into hours correctly.
+    """
+    total_seconds = (time1.hour * 3600 + time1.minute * 60) + (time2.hour * 3600 + time2.minute * 60)
+    hours, remainder = divmod(total_seconds, 3600)
+    minutes, _ = divmod(remainder, 60)
+    return time(hour=hours, minute=minutes)
 
 
 def home(request):
@@ -19,13 +30,22 @@ def home(request):
 
 
     progress = 0
+    try:
+        info = Info.objects.get(user = user)
+    except Info.DoesNotExist:
+        info = Info(user = user)
+        info.save()
+        
+    
+    print(info.streak)
+    streak = info.streak 
+    score = 0
+
     if DayPlan.objects.filter(user=user, date=today).exists():
 
         plan = DayPlan.objects.get(user=user, date=today)
         tasks = Task.objects.filter(DayPlan=plan)
-        info = Info.objects.get(user = user)
-        print(info.streak)
-        streak = info.streak
+        
         score = plan.score
 
         completed_time = (0, 0)
@@ -80,8 +100,13 @@ def signup(request):
         user.set_password(password)  # Use set_password to hash the password
         user.save()
 
-        response = render(request, 'index.html')
+        # Create an Info object for the user
+        info = Info(user=user)
+        info.save()
+
+
         login(request, user)
+        response = render(request, 'index.html')
         response.set_cookie('user', user.email)
         return response
 
@@ -167,12 +192,28 @@ def add_plan(request):
     
         Task.objects.filter(DayPlan=plan).delete()
         
-        for tsk,ctgory,hr,mins in zip(task,category,hour,minute):
-            print(hr, mins, tsk, ctgory)
-            estimated_time = time(hour = int(hr), minute = int(mins))
+       
+        # Example usage in your existing code
+        total_compulsary_time = time(hour=0, minute=0)
+        total_optional_time = time(hour=0, minute=0)
+
+        for tsk, ctgory, hr, mins in zip(task, category, hour, minute):
+            estimated_time = time(hour=int(hr), minute=int(mins))
             task = Task(DayPlan=plan, task=tsk, category=ctgory, estimated_time=estimated_time)
             task.save()
-            print("task added")
+
+            if ctgory == 'Compulsory':
+                total_compulsary_time = add_times(total_compulsary_time, estimated_time)
+            else:
+                total_optional_time = add_times(total_optional_time, estimated_time)
+
+        plan.total_compulsary_time = total_compulsary_time
+        plan.total_optional_time = total_optional_time
+        plan.save()
+
+        print("task added")
+
+
 
         return render(request, 'plan.html', {'success': 'Plan added successfully', 'editable': True})
 
@@ -252,6 +293,7 @@ def update_completed(request):
             messages.error(request, f"An error occurred: {e}")
 
         check_and_update_streak(request.user)
+        check_and_update_score(request.user)
         # Redirect back to the completed tasks page
         return redirect('/completed/')
 
@@ -284,7 +326,41 @@ def check_and_update_streak(CustomUser):
                 return True
     else:
         return False
- 
+
+
+def check_and_update_score(CustomUser):
+    user = CustomUser
+    today = date.today()
+    if DayPlan.objects.filter(user = user, date = today).exists():
+        plan = DayPlan.objects.get(user = user, date = today)
+        tasks = Task.objects.filter(DayPlan = plan)
+        
+        completed_compulsary_time = (0, 0)
+        completed_optional_time = (0, 0)
+
+        
+
+        for task in tasks:
+            if task.is_completed and task.category == 'Compulsory':
+                completed_compulsary_time = (completed_compulsary_time[0]+ task.estimated_time.hour, completed_compulsary_time[1]+task.estimated_time.minute)
+            elif task.is_completed and task.category == 'Optional':
+                completed_optional_time = (completed_optional_time[0]+ task.estimated_time.hour, completed_optional_time[1]+task.estimated_time.minute)
+            else:
+                continue
+        try:
+            compulsary_score = (completed_compulsary_time[0]*60 + completed_compulsary_time[1])/ (plan.total_compulsary_time.hour*60 + plan.total_compulsary_time.minute) * 9.5
+        except ZeroDivisionError:
+            compulsary_score = 0
+        
+        try:
+            optional_score = (completed_optional_time[0]*60 + completed_optional_time[1])/ (plan.total_optional_time.hour*60 + plan.total_optional_time.minute) * 0.5
+        except ZeroDivisionError:
+            optional_score = 0
+
+        plan.score = compulsary_score + optional_score
+        plan.save()
+
+        
 
 def get_progress(request):
     if request.method == 'GET':
@@ -310,6 +386,13 @@ def get_progress(request):
 
             response = JsonResponse({'progress': progress})
         else:
-            response = JsonResponse({'progress': 0})
+            response = JsonResponse({'prog total_compulsary_scoreress': 0})
 
         return response
+    
+
+from django.http import HttpResponse
+
+def celery_test(request):
+    your_midnight_task.delay()
+    return HttpResponse("Task added to the queue")

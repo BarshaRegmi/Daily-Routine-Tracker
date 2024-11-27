@@ -42,12 +42,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_extensions',
 ]
 
 
 AUTH_USER_MODEL = 'app.CustomUser'
 
-
+ 
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -148,3 +149,12 @@ MEDIA_URL = '/media/'
 
 # Directory where uploaded files will be stored
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+
+CELERY_BROKER_URL = 'redis://localhost:6379/0'  # Adjust the Redis URL if necessary
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+
+
+INSTALLED_APPS += ['django_celery_beat']

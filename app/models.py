@@ -42,10 +42,15 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         return self.email 
     
 class DayPlan(models.Model):
+    
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     date = models.DateField()
-    score = models.IntegerField(default=0)
+    score = models.FloatField(default=0)
     completed = models.BooleanField(default=False)
+    total_compulsary_time = models.TimeField(default='00:00:00')
+    total_optional_time = models.TimeField(default='00:00:00')
+    completed_compulsary_time = models.TimeField(default='00:00:00')
+    completed_optional_time = models.TimeField(default='00:00:00')
 
     class Meta:
         unique_together = ('user', 'date')  # Ensure unique day-user combinations
@@ -80,9 +85,11 @@ class Info(models.Model):
     user = models.OneToOneField(CustomUser, on_delete = models.CASCADE)
     streak = models.IntegerField(default = 0)
     photo = models.ImageField(upload_to='static/images/photos/', blank=True, null=True)
-    discipline_score = models.IntegerField(default = 0)
+    discipline_score = models.FloatField(default = 0)
     freeze_available = models.IntegerField(default = 3)
     last_freeze_used = models.DateField(blank=True, null=True)
+    last_active_date = models.DateField(blank=True, null=True)
+    total_active_days = models.IntegerField(default = 0)
 
 
     def __str__(self):

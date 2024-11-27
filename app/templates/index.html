@@ -8,12 +8,12 @@
 <div class="container mt-2">
     <div class="row">
         <div class="col-md-12">
-            <h1>Welcome, {{user.name}}</h1>
+            <h2>Welcome, {{user.name}}</h2>
             <p>Track your daily routine easily and efficiently. Stay organized and achieve your goals!</p>
         </div>
 
         <div class ='col-md-8'>
-            <h2 style="margin-top:2%">Today's Routine</h2>
+            <h3 style="margin-top:2%">Today's Routine</h3>
             <table class="table table-bordered table-striped table-hover" >
                 <thead style=" background-color: #5AB0C4; color: white">
                     <tr>
@@ -36,7 +36,7 @@
                 </tbody>
             </table>
 
-            <h3 style="margin-top: 5%">You have completed {{progress}}% </h3>
+            <h4 style="margin-top: 5%">You have completed {{progress}}% </h4>
             <div class="progress" style='margin-bottom:3%;margin-top:3%'>
                 <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" style="width: {{progress}}%"></div>
             </div>
@@ -46,7 +46,7 @@
         </div>
 
         <div class = 'col-md-4' >
-            <div class="card card-container" style="width:100% ;">
+            <div class="card card-container" >
                 <div class="card-body">
                     <h3 class="card-title text-left mb-4" >Streak</h3>
                     
@@ -65,7 +65,7 @@
                 </div>
             </div>
 
-            <div class="card card-container" style="width:100% ; margin-top: 5%">
+            <div class="card card-container" style=" margin-top: 5%">
                 <div class="card-body">
                     <h3 class="card-title text-left mb-4" >Study With Me</h3>
                     <a href="" class="btn btn-primary">Start</a>
