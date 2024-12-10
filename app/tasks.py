@@ -7,6 +7,8 @@ def your_midnight_task():
     users = CustomUser.objects.all()
     
     for user in users:
+        if not DayPlan.objects.filter(user = user, date = datetime.date.today()).exists():
+            continue
         dayplan = DayPlan.objects.get(user = user, date = datetime.date.today())
         info = Info.objects.get(user = user)
 
